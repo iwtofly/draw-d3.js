@@ -13,22 +13,35 @@
                          .attr("class","tooltip")  
                          .style("opacity",0.0); 
 
-          var resources = [ ["T",{"data":""}],["S",{"content":{"file1":"pic1","file2":"pic2"}}],["A",1,{"data":""}] ,["A",2,{"data":""}],["B",{"data":""}],["B",1,{"data":""}],["B",2,{"node":"这是MEC_sub_B2"}]];
+          var resources = [ ["T",{"data":""}],["A",{"data":"A"}],
+                  ["S",{"content":{"file1":"pic1","file2":"pic2"}}],
+                  ["A",1,{"data":""}] ,["A",2,{"data":""}],["B",{"data":""}],
+                  ["B",1,{"data":""}],["B",2,{"node":"这是MEC_sub_B2"}],
+                 ];
+
+                  // ["PH",{"target":"A1"},{"data":""}] 
           //socket.io接收到的数据
           
            draw();
-          setInterval(function(){
-               resources.push(["B",3,{"data":""}]);
-               draw();
-          },10000)
+          // setInterval(function(){
+          //   // svg.selectAll().remove();
+          //     $("svg").empty();
+          //      resources.push(["B",3,{"data":""}]);
+          //      draw();
+          // },10000)
           
 
           function draw(){
+
              // var resources = [["A"],["B"],["B",1], ["T"],["S"],["A",1] ,["A",2],["B",2]];
                var nodeLength = resources.length;
 
+               var dd='{"data":"kk"';
+               var aa=dd+",'data':'aa'}";
+               console.log("aa"+aa)
+
                console.log("nodeLength:"+nodeLength)
-               var targetT,targetS,targetA,targetB;  
+               var targetT,targetS,targetA,targetB,targetSub={};  
 
                var nodes = d3.range(0,nodeLength).map(function(i){
                     if(resources[i].length==2 &&  resources[i][0]=="T"){
@@ -48,15 +61,43 @@
                          return {name:"MEC_B",img:"./img/swtich.png", data:resources[i][1]}
                     }
                     else if(resources[i].length==3 && resources[i][0]=="A"){
+                          targetSub=JSON.stringify(targetSub).toString();
+                          targetSub=targetSub.substr(0,targetSub.length-1);
+                          console.log("TAR1"+targetSub);
+                          var tempname='"'+"A"+resources[i][1]+'"';
+                          var temp;
+                          if(targetSub=="{"){
+                            temp = targetSub+tempname+":"+i+"}";
+                          }else{
+                            temp = targetSub+","+tempname+":"+i+"}";
+                          }
+                          console.log("temp "+temp)
+                          targetSub=JSON.parse(temp);
                          return {name:"MEC_A_sub"+resources[i][1],img:"./img/MEC.png",data:resources[i][2]}
                     }
                     else if(resources[i].length==3 && resources[i][0]=="B"){
+                          targetSub=JSON.stringify(targetSub).toString();
+                          targetSub=targetSub.substr(0,targetSub.length-1);
+                          var tempname='"'+"B"+resources[i][1]+'"';
+                          var temp;
+                          if(targetSub=="{"){
+                            temp = targetSub+tempname+":"+i+"}";
+                          }else{
+                            temp = targetSub+","+tempname+":"+i+"}";
+                          }
+                          targetSub=JSON.parse(temp);
                          return {name:"MEC_B_sub"+resources[i][1],img:"./img/MEC.png",data:resources[i][2]}
                     }
+                    else if(resources[i].length==3 && resources[i][0]=="PH"){
+
+                         return {name:"Phone",img:"./img/MEC.png",data:resources[i][2]}
+                    }
+
                     console("i:"+i)
                })
 
-               console.log("nodes: "+JSON.stringify(nodes))
+               console.log("nodes: "+JSON.stringify(nodes));
+               console.log("targetSub: "+JSON.stringify(targetSub));
 
                var edges = d3.range(1,nodeLength).map(function(i){
                     console.log("nodes["+i+"]"+JSON.stringify(nodes[i]))
