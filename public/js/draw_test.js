@@ -14,8 +14,8 @@
                          .style("opacity",0.0);  
           
           //socket.io接收到的数据
-          // var resources = [ ["T"],["S"],["A",1] ,["A",2],["A"],["B"],["B",1],["B",2]];
-          var resources = [ ["T",{"data":""}],["S",{"data":""}],["A",1,{"data":""}] ,["A",2,{"data":""}],["B",{"data":""}],["B",1,{"data":""}],["B",2,{"data":""}]];
+          // var resources = [["A"],["B"],["B",1], ["T"],["S"],["A",1] ,["A",2],["B",2]];
+          var resources = [ ["T",{"data":""}],["S",{"content":{"file1":"pic1","file2":"pic2"}}],["A",1,{"data":""}] ,["A",2,{"data":""}],["B",{"data":""}],["B",1,{"data":""}],["B",2,{"node":"这是MEC_sub_B2"}]];
           var nodeLength = resources.length;
 
           var targetT,targetS,targetA,targetB;  
@@ -49,7 +49,7 @@
           console.log("nodes: "+JSON.stringify(nodes))
 
           var edges = d3.range(1,nodeLength).map(function(i){
-               console.log("nodes[i]"+nodes[i])
+               console.log("nodes["+i+"]"+JSON.stringify(nodes[i]))
                if(nodes[i]["name"]=="Server"){
                     return {source: i,target: targetT}
                }if(nodes[i].name=="MEC_A"){
@@ -121,8 +121,8 @@
                                   （3）设定提示框的透明度为1.0（完全不透明） 
                                   */  
                                 
-                                   tooltip.html(d.data[i]+ "ggggggggggg" + "<br />" +   
-                                     d.data[i]+" ggggggggg")  
+                                   tooltip.html(JSON.stringify(d.data)+"<br />" +   
+                                     d.data+" ggggggggg")  
                                                .style("left", (d3.event.pageX) + "px")  
                                                .style("top", (d3.event.pageY + 20) + "px")  
                                                .style("opacity",1.0);  
