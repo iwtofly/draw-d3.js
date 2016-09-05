@@ -16,8 +16,13 @@
           var resources = [ ["T",{"data":""}],["A",{"data":"A"}],
                   ["S",{"content":{"file1":"pic1","file2":"pic2"}}],
                   ["A",1,{"data":""}] ,["A",2,{"data":""}],["B",{"data":""}],
-                  ["B",1,{"data":""}],["B",2,{"node":"这是MEC_sub_B2"}],
-                 ];
+                  ["B",1,{"data":""}],["B",2,{"node":""}],
+                  ["PH",{"target":"B2"},{"data":""}]  ];
+
+          // var position = {"Tracker":{xp:47,yp:219}, "Server":{xp:85,yp:337},"MEC_A":{xp:240,yp:271},"MEC_B":{xp:240,yp:480},
+          //                 "MEC_A_sub1":{xp:400,yp:180},"MEC_A_sub2":{xp:400,yp:295},
+          //                 "MEC_B_sub1":{xp:400,yp:453},"MEC_B_sub2":{xp:400,yp:586}
+          //                 }
 
                   // ["PH",{"target":"A1"},{"data":""}] 
           //socket.io接收到的数据
@@ -36,29 +41,31 @@
              // var resources = [["A"],["B"],["B",1], ["T"],["S"],["A",1] ,["A",2],["B",2]];
                var nodeLength = resources.length;
 
-               var dd='{"data":"kk"';
-               var aa=dd+",'data':'aa'}";
-               console.log("aa"+aa)
+               // 参考
+               // var dd='{"data":"kk"';
+               // var aa=dd+",'data':'aa'}";
+               // console.log("aa"+aa)
 
                console.log("nodeLength:"+nodeLength)
-               var targetT,targetS,targetA,targetB,targetSub={};  
+               var targetT,targetS,targetA,targetB,subIndex,targetSub={};  
+               var k=0;
 
                var nodes = d3.range(0,nodeLength).map(function(i){
                     if(resources[i].length==2 &&  resources[i][0]=="T"){
-                         targetT=i                    
-                         return {name:"Track",img:"./img/cloud-server.png",data:resources[i][1]}
+                         targetT=i;               
+                         return {name:"Tracker",img:"./img/cloud-server.png",data:resources[i][1], x:570,y:95}
                     }
                     else if(resources[i].length==2 && resources[i][0]=="S"){
-                         targetS=i  
-                         return {name:"Server",img:"./img/cloud-server.png",data:resources[i][1]}
+                         targetS=i;
+                         return {name:"Server",img:"./img/cloud-server.png",data:resources[i][1],x:570,y:246}
                     }
                     else if(resources[i].length==2 && resources[i][0]=="A"){
-                         targetA=i
-                         return {name:"MEC_A",img:"./img/swtich.png" ,data:resources[i][1]}
+                         targetA=i;
+                         return {name:"DGW_A",img:"./img/swtich.png" ,data:resources[i][1], x:380,y:248}
                     }
                     else if(resources[i].length==2 && resources[i][0]=="B"){
-                         targetB=i  
-                         return {name:"MEC_B",img:"./img/swtich.png", data:resources[i][1]}
+                         targetB=i; 
+                         return {name:"DGW_B",img:"./img/swtich.png", data:resources[i][1],x:380,y:450}
                     }
                     else if(resources[i].length==3 && resources[i][0]=="A"){
                           targetSub=JSON.stringify(targetSub).toString();
@@ -73,7 +80,7 @@
                           }
                           console.log("temp "+temp)
                           targetSub=JSON.parse(temp);
-                         return {name:"MEC_A_sub"+resources[i][1],img:"./img/MEC.png",data:resources[i][2]}
+                         return {name:"MEC_A_sub"+resources[i][1],img:"./img/MEC.png",data:resources[i][2],x:200 , y:resources[i][1]==1 ? 145:295}
                     }
                     else if(resources[i].length==3 && resources[i][0]=="B"){
                           targetSub=JSON.stringify(targetSub).toString();
@@ -86,11 +93,20 @@
                             temp = targetSub+","+tempname+":"+i+"}";
                           }
                           targetSub=JSON.parse(temp);
-                         return {name:"MEC_B_sub"+resources[i][1],img:"./img/MEC.png",data:resources[i][2]}
+                         return {name:"MEC_B_sub"+resources[i][1],img:"./img/MEC.png",data:resources[i][2],x:200,y:resources[i][1]==1 ? 415:580}
                     }
                     else if(resources[i].length==3 && resources[i][0]=="PH"){
-
-                         return {name:"Phone",img:"./img/MEC.png",data:resources[i][2]}
+                          k++;
+                          var tempTar=resources[i][1].target;
+                          subIndex=targetSub[tempTar];
+                          var tempY=function(){
+                            if(tempTar=="A1"){return position.MEC_A_sub1.yp+(k-2)*50}
+                            else if(tempTar=="A2"){return position.MEC_A_sub2.yp+(k-2)*50}
+                            else if(tempTar=="B1"){return position.MEC_B_sub1.yp+(k-2)*50}
+                            else if(tempTar=="B2"){return position.MEC_B_sub2.yp+(k-2)*50};
+                          }
+                         return {name:"Phone",img:"./img/phone.png",data:resources[i][2],
+                                  x:85, y:tempY }
                     }
 
                     console("i:"+i)
@@ -103,9 +119,9 @@
                     console.log("nodes["+i+"]"+JSON.stringify(nodes[i]))
                     if(nodes[i]["name"]=="Server"){
                          return {source: i,target: targetT}
-                    }if(nodes[i].name=="MEC_A"){
+                    }if(nodes[i].name=="DGW_A"){
                          return {source: i,target: targetS}
-                    }if(nodes[i].name=="MEC_B"){
+                    }if(nodes[i].name=="DGW_B"){
                          return {source: i,target: targetS}
                     }if(nodes[i].name.substr(0,9)=="MEC_A_sub"){
                          var temTar1= targetA==undefined ? targetS:targetA;
@@ -113,6 +129,13 @@
                     }if(nodes[i].name.substr(0,9)=="MEC_B_sub"){
                          var temTar2= targetB==undefined ? targetS:targetB;
                          return {source: i,target: temTar2}
+                    }if(nodes[i].name =="Phone"){
+                        //这是上一级的索引例如“A1”
+                        console.log(resources[i][1].target)
+                        var tempTar=resources[i][1].target;
+                        subIndex=targetSub[tempTar];
+                        console.log("phone: "+subIndex)
+                        return {source: i ,target: subIndex}
                     }
                })
 
@@ -121,7 +144,7 @@
               
                
                //节点和边;
-               // var nodes = [ {name: "Track" ,img:"./img/cloud-server.png" },{name:"Server",img:"./img/cloud-server.png"},
+               // var nodes = [ {name: "Tracker" ,img:"./img/cloud-server.png" },{name:"Server",img:"./img/cloud-server.png"},
                //                { name: "网关", img:"./img/swtich.png"}, { name: "网关", img:"./img/swtich.png" },
                //          { name: "MEC_a1" ,img:"./img/MEC.png"}, { name: "MEC_a2" ,img:"./img/MEC.png" },
                //          { name: "MEC_b1" ,img:"./img/MEC.png" }, { name: "MEC_b2" ,img:"./img/MEC.png" }];
@@ -137,6 +160,7 @@
                               .links(edges)  //连线数组
                               .size([width,height])  //作用域范围
                               .linkDistance(150)
+                              .gravity(.05)
                               .charge([-400]);
 
                var drag = force.drag()
@@ -163,8 +187,6 @@
                                    .attr("xlink:href",function(d){
                                         return d.img;
                                    })
-                                   .attr("x",10)
-                                   .attr("y",10)
                                    .call(force.drag) //节点能够拖动
                                    .on("mouseover",function(d,i){  
                                    /* 
@@ -190,7 +212,8 @@
                                    /* 鼠标移出时，将透明度设定为0.0（完全透明）*/  
                                      
                                        tooltip.style("opacity",0.0);  
-                                   })  
+                                   })
+
 
 
                svg_nodes_img.on("dblclick",dblclick)
@@ -205,18 +228,20 @@
                                         .text(function(d){
                                              return d.name;
                                         });
+              
                force.on("tick",function(){ //每个时间间隔
+                    
                     //更新连线坐标
-                    svg_edges.attr("x1",function(d){return d.source.x ;})
-                              .attr("y1",function(d){return d.source.y ;})
-                              .attr("x2",function(d){return d.target.x ;})
-                              .attr("y2",function(d){return d.target.y})
+                    svg_edges.attr("x1",function(d){d.fixed = true ;return d.source.x ;})
+                              .attr("y1",function(d){d.fixed = true; return d.source.y ;})
+                              .attr("x2",function(d){d.fixed = true; return d.target.x ;})
+                              .attr("y2",function(d){d.fixed = true; return d.target.y})
                     //更新节点坐标
-                    svg_nodes_img.attr("x",function(d){return d.x-15})
-                              .attr("y",function(d){ return d.y-30});
+                    svg_nodes_img.attr("x",function(d){d.fixed = true; return d.x-15})
+                              .attr("y",function(d){ d.fixed = true; return d.y-30});
 
-                    svg_texts.attr("x",function(d){ return d.x+10})
-                              .attr("y",function(d){ return d.y+10});
+                    svg_texts.attr("x",function(d){ d.fixed = true; return d.x+10})
+                              .attr("y",function(d){ d.fixed = true; return d.y+10});
 
                });
 
