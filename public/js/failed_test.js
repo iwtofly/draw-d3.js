@@ -17,7 +17,7 @@
                   ["S",{"content":{"file1":"pic1","file2":"pic2"}}],
                   ["A",1,{"data":""}] ,["A",2,{"data":""}],["B",{"data":""}],
                   ["B",1,{"data":""}],["B",2,{"node":""}],
-                  ["PH",{"target":"B2"},{"data":""}]  ];
+                  ["PH",{"target":"B2"},{"data":""}] ];
 
           // var position = {"Tracker":{xp:47,yp:219}, "Server":{xp:85,yp:337},"MEC_A":{xp:240,yp:271},"MEC_B":{xp:240,yp:480},
           //                 "MEC_A_sub1":{xp:400,yp:180},"MEC_A_sub2":{xp:400,yp:295},
@@ -41,15 +41,11 @@
              // var resources = [["A"],["B"],["B",1], ["T"],["S"],["A",1] ,["A",2],["B",2]];
                var nodeLength = resources.length;
 
-               // 参考
-               // var dd='{"data":"kk"';
-               // var aa=dd+",'data':'aa'}";
-               // console.log("aa"+aa)
-
                console.log("nodeLength:"+nodeLength)
                var targetT,targetS,targetA,targetB,subIndex,targetSub={};  
                var k=0;
 
+               //初始化节点
                var nodes = d3.range(0,nodeLength).map(function(i){
                     if(resources[i].length==2 &&  resources[i][0]=="T"){
                          targetT=i;               
@@ -68,31 +64,15 @@
                          return {name:"DGW_B",img:"./img/swtich.png", data:resources[i][1],x:380,y:450}
                     }
                     else if(resources[i].length==3 && resources[i][0]=="A"){
-                          targetSub=JSON.stringify(targetSub).toString();
-                          targetSub=targetSub.substr(0,targetSub.length-1);
-                          console.log("TAR1"+targetSub);
-                          var tempname='"'+"A"+resources[i][1]+'"';
-                          var temp;
-                          if(targetSub=="{"){
-                            temp = targetSub+tempname+":"+i+"}";
-                          }else{
-                            temp = targetSub+","+tempname+":"+i+"}";
-                          }
-                          console.log("temp "+temp)
-                          targetSub=JSON.parse(temp);
+                          var tempname="A"+resources[i][1];
+                          targetSub[tempname]=i;
+                          
                          return {name:"MEC_A_sub"+resources[i][1],img:"./img/MEC.png",data:resources[i][2],x:200 , y:resources[i][1]==1 ? 145:295}
                     }
-                    else if(resources[i].length==3 && resources[i][0]=="B"){
-                          targetSub=JSON.stringify(targetSub).toString();
-                          targetSub=targetSub.substr(0,targetSub.length-1);
-                          var tempname='"'+"B"+resources[i][1]+'"';
-                          var temp;
-                          if(targetSub=="{"){
-                            temp = targetSub+tempname+":"+i+"}";
-                          }else{
-                            temp = targetSub+","+tempname+":"+i+"}";
-                          }
-                          targetSub=JSON.parse(temp);
+                    else if(resources[i].length==3 && resources[i][0]=="B"){                          
+                          var tempname="B"+resources[i][1];
+                          targetSub[tempname]=i;
+
                          return {name:"MEC_B_sub"+resources[i][1],img:"./img/MEC.png",data:resources[i][2],x:200,y:resources[i][1]==1 ? 415:580}
                     }
                     else if(resources[i].length==3 && resources[i][0]=="PH"){
@@ -115,6 +95,7 @@
                console.log("nodes: "+JSON.stringify(nodes));
                console.log("targetSub: "+JSON.stringify(targetSub));
 
+               //初始化连线
                var edges = d3.range(1,nodeLength).map(function(i){
                     console.log("nodes["+i+"]"+JSON.stringify(nodes[i]))
                     if(nodes[i]["name"]=="Server"){
@@ -131,9 +112,9 @@
                          return {source: i,target: temTar2}
                     }if(nodes[i].name =="Phone"){
                         //这是上一级的索引例如“A1”
-                        console.log(resources[i][1].target)
                         var tempTar=resources[i][1].target;
                         subIndex=targetSub[tempTar];
+
                         console.log("phone: "+subIndex)
                         return {source: i ,target: subIndex}
                     }
@@ -142,18 +123,6 @@
                console.log("edges: "+JSON.stringify(edges))
 
               
-               
-               //节点和边;
-               // var nodes = [ {name: "Tracker" ,img:"./img/cloud-server.png" },{name:"Server",img:"./img/cloud-server.png"},
-               //                { name: "网关", img:"./img/swtich.png"}, { name: "网关", img:"./img/swtich.png" },
-               //          { name: "MEC_a1" ,img:"./img/MEC.png"}, { name: "MEC_a2" ,img:"./img/MEC.png" },
-               //          { name: "MEC_b1" ,img:"./img/MEC.png" }, { name: "MEC_b2" ,img:"./img/MEC.png" }];
-           
-               // var edges = [ {source: 0,target: 1} ,{ source : 0, target : 2},
-               //                {source: 1,target: 2} ,{ source : 1, target : 3},
-               //                { source : 2 , target: 3 } , { source : 2 , target: 4 } ,
-               //           { source : 2 , target: 5 } , { source : 3 , target: 6 } ,
-               //           { source : 3 , target: 7 }  ];
 
                var force = d3.layout.force()
                               .nodes(nodes) //指定节点数组
@@ -169,12 +138,26 @@
                console.log(nodes);
                console.log(edges);
                //   添加连线
-               var svg_edges = svg.selectAll("line")
-                                   .data(edges)
-                                   .enter()
-                                   .append("line")
-                                   .style("stroke","#ccc")
-                                   .style("stroke-width",3);
+               
+
+               var updateEdges = svg.selectAll("line")
+                                   .data(edges);
+               var enterEdges = updateEdges.enter();
+
+               updateEdges.style("stroke","#ccc")
+                          .style("stroke-width",3);
+
+               enterEdges.append("line")
+                          .style("stroke","#ccc")
+                          .style("stroke-width",3);
+
+                //以前的版本
+               // var svg_edges = svg.selectAll("line")
+               //                     .data(edges)
+               //                     .enter()
+               //                     .append("line")
+               //                     .style("stroke","#ccc")
+               //                     .style("stroke-width",3);
 
                var color = d3.scale.category20();
 
@@ -232,7 +215,7 @@
                force.on("tick",function(){ //每个时间间隔
                     
                     //更新连线坐标
-                    svg_edges.attr("x1",function(d){d.fixed = true ;return d.source.x ;})
+                    updateEdges.attr("x1",function(d){d.fixed = true ;return d.source.x ;})
                               .attr("y1",function(d){d.fixed = true; return d.source.y ;})
                               .attr("x2",function(d){d.fixed = true; return d.target.x ;})
                               .attr("y2",function(d){d.fixed = true; return d.target.y})
