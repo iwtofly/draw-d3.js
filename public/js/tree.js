@@ -1,8 +1,5 @@
 (function(){
      $().ready(function(){
-          var width = 800,
-               height = 800;
- 
          var root={"servers":[
                  {
                   "port":40001,
@@ -34,27 +31,14 @@
                                {"port":50003,"name":"MEC2","pos":"22","caches":{},"ip":"::ffff:127.0.0.1"}
                                ]}
                     ]}
-          var myNode =[];
-          myNode.push(root.servers[0]);
-          for(var k1=0;k1<root.proxies.length;k1++){
-            myNode.push(root.proxies[k1])
-            for(var k2=0;k2<root.proxies[k1].nodes.length;k2++){
-              myNode.push(root.proxies[k1].nodes[k2]);
-            }
-          }
-          console.log(JSON.stringify(myNode));
-
-          var svg=d3.select('svg')
-                         .attr({"width":width,
-                                "height":height,
-                           })
+         
 
           var tooltip = d3.select("body")  
                          .append("div")  
                          .attr("class","tooltip")  
                          .style("opacity",0.0); 
           
-           draw();
+           draw(root);
           // setInterval(function(){
           //   // svg.selectAll().remove();
           //     $("svg").empty();
@@ -62,14 +46,31 @@
           //      draw();
           // },10000)
           
+          var width = 800,
+                  height = 800;
+ 
+          var svg=d3.select("body")     //选择文档中的body元素
+                            .append("svg")     
+                            .attr({"width":width,
+                                    "height":height,
+                               })
 
-          function draw(){
-               $("svg").empty();
+          function draw(root){
 
-               var targetT,targetS,targetA,targetB,subIndex,targetSub={}; 
+              var myNode =[];
+              myNode.push(root.servers[0]);
+              for(var k1=0;k1<root.proxies.length;k1++){
+                myNode.push(root.proxies[k1])
+                for(var k2=0;k2<root.proxies[k1].nodes.length;k2++){
+                  myNode.push(root.proxies[k1].nodes[k2]);
+                }
+              }
+              console.log(JSON.stringify(myNode));
 
-               var nodeLength=myNode.length;
-               var nodes=d3.range(0,nodeLength).map(function(i){
+              var targetT,targetS,targetA,targetB,subIndex,targetSub={}; 
+
+              var nodeLength=myNode.length;
+              var nodes=d3.range(0,nodeLength).map(function(i){
                    if(myNode[i].name.substr(0,3)=="Sir"){
                     targetS=i;
                     return{name:"Server",img:"./img/cloud-server.png",data:"myNode[i]",x:570,y:246}
@@ -77,7 +78,7 @@
                    if(myNode[i].name.substr(0,7)=="GATEWAY"){
                     if(myNode[i].pos=="1"){
                       targetA=i;
-                      return{name:"DGW_A",img:"./img/swtich.png" ,data:"", x:380,y:248}
+                      return{name:"DGW_A",img:"./img/swtich.png" ,data:myNode[i].data, x:380,y:248}
                     }else{
                       targetB=i;
                       return {name:"DGW_B",img:"./img/swtich.png", data:"",x:380,y:450}
@@ -90,6 +91,19 @@
                         return {name:"MEC_B_sub"+myNode[i].pos.substr(1,2),img:"./img/MEC.png",data:"",x:200 , y : myNode[i].pos.substr(1,2)==1 ? 415:580}
                       }
                    }
+                   // else if(myNode[i].pos.length==3 &&myNode[i].name=="PH"){
+               //            k++;
+               //            var tempTar=resources[i][1].target;
+               //            subIndex=targetSub[tempTar];
+               //            var tempY=function(){
+               //              if(tempTar=="A1"){return position.MEC_A_sub1.yp+(k-2)*50}
+               //              else if(tempTar=="A2"){return position.MEC_A_sub2.yp+(k-2)*50}
+               //              else if(tempTar=="B1"){return position.MEC_B_sub1.yp+(k-2)*50}
+               //              else if(tempTar=="B2"){return position.MEC_B_sub2.yp+(k-2)*50};
+               //            }
+               //           return {name:"Phone",img:"./img/phone.png",data:resources[i][2],
+               //                    x:85, y:tempY }
+               //      }
                })
 
                console.log(JSON.stringify(nodes));
@@ -97,19 +111,16 @@
                var edges = d3.range(1,nodeLength).map(function(i){
                     console.log("nodes["+i+"]"+JSON.stringify(nodes[i]))
                     if(nodes[i].name=="DGW_A"){
-                         return {source: i,target: targetS+1}
+                         return {source: i,target: targetS}
                     }if(nodes[i].name=="DGW_B"){
-                         return {source: i,target: targetS+1}
-                    }else{
-                      return {source:i,target:i}
+                         return {source: i,target: targetS}
+                    }else if(nodes[i].name.substr(0,9)=="MEC_A_sub"){
+                      var temTar1= targetA==undefined ? targetS:targetA;
+                      return {source:i,target:temTar1}
+                    }else if(nodes[i].name.substr(0,9)=="MEC_B_sub"){
+                      var temTar2= targetB==undefined ? targetS:targetB;
+                      return {source:i,target:temTar2}
                     }
-                    // if(nodes[i].name.substr(0,9)=="MEC_A_sub"){
-                    //      var temTar1= targetA==undefined ? targetS:targetA;
-                    //      return {source: i,target: temTar1}
-                    // }if(nodes[i].name.substr(0,9)=="MEC_B_sub"){
-                    //      var temTar2= targetB==undefined ? targetS:targetB;
-                    //      return {source: i,target: temTar2}
-                    // }
                     // if(nodes[i].name =="Phone"){
                     //     //这是上一级的索引例如“A1”
                     //     var tempTar=resources[i][1].target;
@@ -218,7 +229,7 @@
                console.log(nodes);
                console.log(edges);
                // //   添加连线
-               
+               var svg=d3.select("svg");
 
                var updateEdges = svg.selectAll("line")
                                    .data(edges);
@@ -317,6 +328,58 @@
                } 
          
           }
+
+
+
+          var host=root.proxies[0];
+          var text="abbbbbbbbbb";
+          console.log(host.name)
+          msg(host,null,text);
+          function msg(host, type, text){
+            var nameIndex;
+            switch (host.name){
+              case "Sir1":
+                  console.log("Server");
+
+                  break;
+              case "GATEWAY_1":
+                  console.log("DGW_A");
+                  nameIndex="DGW_A";
+                  break;
+              case "GATEWAY_2":
+                  console.log("DGW_B");
+                  break;
+              case "MEC1":
+                  console.log("MEC_A_sub1");
+                  break;
+              case "MEC2":
+                  console.log("MEC_A_sub2");
+                  break;
+               default:
+                  console.log("Sorry, cannot match ");
+            }
+            host.data=text;
+            console.log(host)
+            root.proxies[0]=host;
+            var myRoot=root;
+            console.log(myRoot)
+            draw(myRoot);
+            d3.select(".tooltip").html(nameIndex+"-"+"action"+"-"+text)
+                .style("left",60 + "px")  
+                .style("top", 60+ "px")
+                .style("opacity",1.0);
+            setTimeout(()=>{
+               d3.select(".tooltip").html(nameIndex+"-"+"action"+"-"+text)
+                .style("left",60 + "px")  
+                .style("top", 60+ "px")
+                .style("opacity",0);
+            },3000)
+            
+
+          }
+
+
+
           
       })  
      
