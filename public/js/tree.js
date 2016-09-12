@@ -274,7 +274,8 @@
                                           d.data+" ggggggggg")  
                                                     .style("left", (d3.event.pageX) + "px")  
                                                     .style("top", (d3.event.pageY + 20) + "px")  
-                                                    .style("opacity",1.0);  
+                                                    .style("opacity",1.0)
+                                                    .style("background-color","rgba(10, 0, 5, 0.8)");  
                                    })  
                                    .on("mousemove",function(d){  
                                    /* 鼠标移动时，更改样式 left 和 top 来改变提示框的位置 */  
