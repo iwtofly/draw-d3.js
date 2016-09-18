@@ -300,6 +300,40 @@
 
             var svg = d3.select('svg');
 
+            var ball=svg.append("circle")
+                        .attr({
+                            "cx":x1,
+                            "cy":y1,
+                            "r":"5",
+                            "stroke":"red",
+                            "fill":"red"
+                        })
+                        .transition()
+                        .duration(1000)
+                        .delay(500)
+                        .ease("linear")
+                        .attr({
+                            "cx":x2,
+                            "cy":y2, 
+                        })
+                        .transition()
+                        .delay(1500)
+                        .remove();
+
+            var textTip=svg.append("text")
+                            .attr({
+                                "x":(x1+x2)/2+10,
+                                "y":(y1+y2)/2+10,
+                                "stroke":"blue"
+                            })
+                            .text(text)
+                            .transition()
+                            .duration(1000)
+                            .delay(500)
+                            .remove();
+
+
+
             var lineFunction = d3.svg.line()
                                  .x(function(d) { return d.x; })
                                  .y(function(d) { return d.y; })
