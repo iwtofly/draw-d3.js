@@ -217,7 +217,7 @@
 
         draw(root);
 
-        var host=root.proxies[0];
+        var host=root.proxies[1];
         var text="abbbbbbbbbb";
         console.log(host.name)
         setTimeout(()=>{
@@ -248,20 +248,6 @@
                 d3.select(".msgTooltip").html(nameIndex+": "+type+"-"+text)
                     .style("opacity",0);
             },3000);
-
-            // host.data=text;
-            // console.log(host)
-            // root.proxies[0]=host;
-            // var myRoot=root;
-            // console.log(myRoot)
-            // draw(myRoot);
-
-            // var line=$("svg line[lid=2]").css("stroke","red");
-            // console.log(line)
-            
-
-
-            
             
         }
 
@@ -300,25 +286,7 @@
 
             var svg = d3.select('svg');
 
-            var ball=svg.append("circle")
-                        .attr({
-                            "cx":x1,
-                            "cy":y1,
-                            "r":"5",
-                            "stroke":"red",
-                            "fill":"red"
-                        })
-                        .transition()
-                        .duration(1000)
-                        .delay(500)
-                        .ease("linear")
-                        .attr({
-                            "cx":x2,
-                            "cy":y2, 
-                        })
-                        .transition()
-                        .delay(1500)
-                        .remove();
+            var defs = svg.append("defs");
 
             var textTip=svg.append("text")
                             .attr({
@@ -333,30 +301,38 @@
                             .remove();
 
 
+            var arrowMarker = defs.append("marker")
+                                    .attr("id","arrow")
+                                    .attr("markerUnits","strokeWidth")
+                                    .attr("markerWidth","12")
+                                    .attr("markerHeight","12")
+                                    .attr("viewBox","0 0 12 12") 
+                                    .attr("refX","6")
+                                    .attr("refY","6")
+                                    .attr("orient","auto");
 
-            var lineFunction = d3.svg.line()
-                                 .x(function(d) { return d.x; })
-                                 .y(function(d) { return d.y; })
-                                 .interpolate("basis");  //linear
-            var lineGraph = svg.append("path")
-                                .attr("d", lineFunction(lineData))
-                                .attr("stroke", "lightblue")
-                                .attr("stroke-width", 5)
-                                .attr("fill", "none")
-                                .transition()
-                                .duration(500)
-                                .ease("bounce")
-                                .attr("stroke", "blue")
-                                .delay(500)
-                                .transition()
-                                .duration(500)
-                                .ease("linear")
-                                .attr("stroke", "lightblue")
-                                .transition()
-                                .delay(1500)
-                                .duration(500)
-                                .ease("linear")
-                                .attr("opacity", 0);
+            var arrow_path = "M2,2 L10,6 L2,10 L6,6 L2,2";
+                                    
+            arrowMarker.append("path")
+                        .attr("d",arrow_path)
+                        .attr("fill","#000");
+
+            //绘制直线
+            var line = svg.append("line")
+                         .attr("x1",x1)
+                         .attr("y1",y1)
+                         .attr("x2",x1)
+                         .attr("y2",y1)
+                         .attr("stroke","red")
+                         .attr("stroke-width",2)
+                         .attr("marker-end","url(#arrow)")
+                         .transition()
+                         .duration(1500)
+                         .attr("x2",x2)
+                         .attr("y2",y2)
+                         .delay(1000)
+                         .duration(1500)
+                         .remove();
 
         }
 

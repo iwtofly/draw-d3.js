@@ -3,10 +3,11 @@
           var width = 800,
                height = 800;
 
-          var svg=d3.select('svg')
-                         .attr({"width":width,
-                                "height":height,
-                           })
+          var svg=d3.select("body")     //选择文档中的body元素
+                    .append("svg")     
+                    .attr({"width":width,
+                            "height":height,
+                       })
 
           var tooltip = d3.select("body")  
                          .append("div")  
